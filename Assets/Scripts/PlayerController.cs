@@ -8,11 +8,10 @@ public class PlayerController : MonoBehaviour
 
     public SpecialPower specialPower;
 
-    //[Header movement]
+    [Header("Movement")]
     public float speed = 8f;
-    public float sprintSpeed = 16f;
-    public float gravity = -10f;
-    public float jumpHeight = 3f;
+
+    [SerializeField] Camera cameraController;
 
     public void Update()
     {
@@ -24,11 +23,10 @@ public class PlayerController : MonoBehaviour
         controller.Move(move * speed * Time.deltaTime);
 
         //if player is alive and button is pressed
-            
-            if (Input.GetKeyDown(KeyCode.Space) && specialPower.specialUsed == false)
+
+        if (Input.GetKeyDown(KeyCode.Space) && specialPower.specialUsed == false)
             {
                 StartCoroutine(specialPower.SpecialSequence());   
             }
-            
     }
 }
