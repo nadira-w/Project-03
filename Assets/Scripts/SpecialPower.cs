@@ -5,69 +5,65 @@ using UnityEngine;
 public class SpecialPower : MonoBehaviour
 {
     public PlayerController playerController;
-    public bool specialActive = false;
 
+    [Header("Player Special")]
+    private bool specialActive = false;
     [SerializeField] float _specialDuration = 10;
-
     public GameObject weaponSpecial;
-    public GameObject missilePrefab;
-    [SerializeField] Transform spawnPosition;
-    public float speed = 5;
     public GameObject reticles;
     public bool specialUsed = false;
     public bool isAiming = false;
 
-    //create ann array of every hit gameobject
-    public List<GameObject> currentHitObjects = new List<GameObject>();
-    //public Transform[] enemyPositions;
+    [Header("Missiles")]
+    public MissileBehavior missilePrefab;
+    public Rigidbody _rb;
+    public Transform spawnPosition;
+    public Vector3 origin;
+    public Vector3 direction;
+
+    [Header("Enemy Tracking")]
+    public Transform target;
     public float currentHitDistance;
 
     public float sphereRadius;
     public float maxDistance;
     public LayerMask layerMask;
 
-    public Vector3 origin;
-    public Vector3 direction;
-
+    void start()
+    {
+        _rb = missilePrefab.GetComponent<Rigidbody>();
+    }
     void Update()
     {
         if (specialActive == true)
         {
             Aim();
 
-            origin = this.transform.position;
+            origin = playerController.transform.position;
             direction = transform.forward;
 
-            //clears out the list every update
-            currentHitObjects.Clear();
-
             RaycastHit[] hits = Physics.SphereCastAll(origin, sphereRadius, direction, maxDistance, layerMask, QueryTriggerInteraction.UseGlobal);
-            //for each successful raycast hit, add the gameobject to the current list of hits
+            //for each successful raycast hit, get the transforms of the targets
             foreach (RaycastHit hit in hits)
             {
-                currentHitObjects.Add(hit.transform.gameObject);
-                //currentHitDistance = hit.distance;            
+                //currentHitObjects.Add(hit.transform);
+                target = hit.transform;
+                currentHitDistance = hit.distance;
 
-                if (hit.transform.tag == "Enemy")
+                //if input is clicked and special is active, fire
+                if (Input.GetKeyDown(KeyCode.Mouse0) && specialActive == true)
                 {
-                    //Debug.Log("Target Aquired!");
-                    //save enemy positions
-                    //update positions of enemy location reticles
+                    //Debug.Log("Missiles Launched!");
+                    Fire();
 
+                    //deactivate special if fired
+                    weaponSpecial.SetActive(false);
+                    specialActive = false;
+                    specialUsed = true;
                 }
+
             }
 
-            //if input is clicked and special is active, fire
-            if (Input.GetKeyDown(KeyCode.Mouse0) && specialActive == true)
-            {
-                Debug.Log("Missiles Launched!");
-                Fire();
-
-                //deactivate special if fired
-                weaponSpecial.SetActive(false);
-                specialActive = false;
-                specialUsed = true;
-            }
             if (specialUsed == true)
             {
                 reticles.SetActive(false);
@@ -83,13 +79,9 @@ public class SpecialPower : MonoBehaviour
 
         weaponSpecial.SetActive(true);
 
-        //isAiming = true;
-
         yield return new WaitForSeconds(_specialDuration);
 
         weaponSpecial.SetActive(false);
-
-        //isAiming = false;
 
         specialActive = false;
 
@@ -112,17 +104,12 @@ public class SpecialPower : MonoBehaviour
 
     public void Fire()
     {
-        //instantiate missiles
+        //for each enemy targeted, instantiate missiles
         //Debug.Log("Firing Missiles!");
-        GameObject missile = Instantiate(missilePrefab);
+        MissileBehavior newMissile = Instantiate(missilePrefab, spawnPosition.position, spawnPosition.rotation);
 
-        missile.transform.position = spawnPosition.position;
+        newMissile.target = target;
 
-        Vector3 rotation = missile.transform.rotation.eulerAngles;
-
-        missile.transform.rotation = Quaternion.Euler(rotation.x, transform.eulerAngles.y, rotation.z);
-
-        missile.GetComponent<Rigidbody>().AddForce(transform.forward * speed, ForceMode.Impulse);
     }
 
 }
