@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public float speed = 8f;
 
     [SerializeField] Camera cameraController;
+    public AudioClip _special;
 
     public void Update()
     {
@@ -25,8 +26,10 @@ public class PlayerController : MonoBehaviour
         //if player is alive and button is pressed
 
         if (Input.GetKeyDown(KeyCode.Space) && specialPower.specialUsed == false)
-            {
-                StartCoroutine(specialPower.SpecialSequence());   
-            }
+        {
+            AudioHelper.PlayClip2D(_special, 1);
+
+            StartCoroutine(specialPower.SpecialSequence());   
+        }
     }
 }
